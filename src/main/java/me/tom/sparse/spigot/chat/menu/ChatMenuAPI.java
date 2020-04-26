@@ -1,20 +1,18 @@
 package me.tom.sparse.spigot.chat.menu;
 
+import me.tom.sparse.spigot.chat.protocol.PlayerChatInterceptor;
 import me.tom.sparse.spigot.chat.util.LogFilter;
+import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
+import org.bukkit.map.MapFont;
+import org.bukkit.map.MinecraftFont;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
-
-import org.bukkit.ChatColor;
-import org.bukkit.entity.Player;
-import org.bukkit.map.MapFont;
-import org.bukkit.map.MinecraftFont;
-import org.bukkit.plugin.Plugin;
-
-import me.tom.sparse.spigot.chat.protocol.PlayerChatInterceptor;
 
 public final class ChatMenuAPI {
     private static final Map<String, ChatMenu> MENUS = new ConcurrentHashMap<>();
@@ -151,20 +149,35 @@ public final class ChatMenuAPI {
     }
 
     /**
-     * <b>This method should only be called by you if you're including this API inside your plugin.</b>
-     * <br>
+     * Initializer to prevent breaking backwards compatibility.
+     *
      * Initializes all the necessary things for the ChatMenuAPI to function. This method can only be called once.
      *
      * @param plugin the plugin to initialize everything with, including listeners and scheduled tasks
      */
     public static void init(@NotNull Plugin plugin) {
+        init(plugin, true);
+    }
+
+    /**
+     * <b>This method should only be called by you if you're including this API inside your plugin.</b>
+     * <br>
+     * Initializes all the necessary things for the ChatMenuAPI to function. This method can only be called once.
+     * Here you can specify whether you want to filter the use of the command.
+     *
+     * @param plugin the plugin to initialize everything with, including listeners and scheduled tasks
+     * @param consoleFilter Filter /cmapi command on the console
+     */
+    public static void init(@NotNull Plugin plugin, boolean consoleFilter) {
         if (ChatMenuAPI.plugin != null)
             return;
 
         ChatMenuAPI.plugin = plugin;
 //		Bukkit.getPluginCommand("cmapi").setExecutor(new CMCommand());
         new CMListener(plugin);
-        new LogFilter();
+
+        if (consoleFilter)
+            new LogFilter();
 
         interceptor = new PlayerChatInterceptor(plugin);
     }
