@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "me.tom.sparse"
-version = "1.1.2"
+version = "1.1.2_jdk8"
 
 repositories {
     mavenCentral()
@@ -48,7 +48,7 @@ dependencies {
 }
 
 configure<JavaPluginConvention> {
-    sourceCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = sourceCompatibility
 }
 
