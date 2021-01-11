@@ -8,10 +8,15 @@ plugins {
 }
 
 group = "me.tom.sparse"
-version = "1.1.2_jdk8"
+version = "1.1.2_jdk8_spgt1.8.8"
 
 repositories {
     mavenCentral()
+
+    maven {
+        name = "spigotmc"
+        url = uri("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
+    }
 
     maven {
         name = "papermc"
@@ -40,7 +45,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("com.destroystokyo.paper:paper-api:1.15-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT")
     compileOnly("com.comphenix.protocol:ProtocolLib:4.5.0")
     compileOnly("org.jetbrains:annotations:19.0.0")
     compileOnly("org.apache.logging.log4j:log4j-api:2.13.2")
