@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "me.tom.sparse"
-version = "1.1.2_jdk8_spgt1.8.8"
+version = "1.1.3_jdk8_spgt1.8.8"
 
 repositories {
     mavenCentral()

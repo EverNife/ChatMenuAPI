@@ -15,7 +15,7 @@ public class LogFilter implements Filter {
     }
 
     private Result filter(String message) {
-        if (message.contains("/cmapi")) return Result.DENY;
+        if (message != null && message.contains("/cmapi")) return Result.DENY;
         return Result.NEUTRAL;
     }
 
