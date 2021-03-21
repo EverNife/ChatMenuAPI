@@ -4,11 +4,10 @@ plugins {
     java
     `maven-publish`
     id("com.github.johnrengelman.shadow") version "5.2.0"
-    id("com.jfrog.bintray") version "1.8.5"
 }
 
-group = "me.tom.sparse"
-version = "1.1.2"
+group = "br.com.finalcraft"
+version = "1.1.2b"
 
 repositories {
     mavenCentral()
@@ -21,11 +20,6 @@ repositories {
     maven {
         name = "aikar-repo"
         url = uri("https://repo.aikar.co/content/groups/aikar/")
-    }
-
-    maven {
-        name = "minebench"
-        url = uri("https://repo.minebench.de/")
     }
 
     maven {
@@ -48,7 +42,7 @@ dependencies {
 }
 
 configure<JavaPluginConvention> {
-    sourceCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = sourceCompatibility
 }
 
@@ -59,28 +53,3 @@ tasks.withType<JavaCompile> {
 publishing.publications.create<MavenPublication> ("mavenJava") {
     from(components["java"])
 }
-
-bintray {
-    user = System.getenv("BINTRAY_USER")
-    key = System.getenv("BINTRAY_API_KEY")
-    setPublications("mavenJava")
-
-    with(pkg) {
-        repo = "minevictus"
-        userOrg = user
-        name = "ChatMenuAPI"
-        setLicenses("GPL-3.0")
-        vcsUrl = "https://github.com/Minevictus/ChatMenuAPI.git"
-
-        with(version) {
-            name = project.version.toString()
-            desc = "An API for making menus inside Minecraft's chat. $name"
-            released = Date().toString()
-        }
-    }
-
-    override = true // just in case
-    publish = true
-}
-
-// Foot fungus // TODO (RMS): Eat this.
