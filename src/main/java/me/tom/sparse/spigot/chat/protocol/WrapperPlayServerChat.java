@@ -17,14 +17,17 @@ package me.tom.sparse.spigot.chat.protocol;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.wrappers.EnumWrappers;
-import com.comphenix.protocol.wrappers.EnumWrappers.ChatType;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
+import me.tom.sparse.spigot.chat.protocol.compat.ChatTypeLegacy;
+import me.tom.sparse.spigot.chat.protocol.compat.ChatTypeNormal;
+import me.tom.sparse.spigot.chat.protocol.compat.IChatTypeInfo;
+import me.tom.sparse.spigot.chat.version.MCVersion;
 
 import java.util.Arrays;
 
 public class WrapperPlayServerChat extends AbstractPacket {
     public static final PacketType TYPE = PacketType.Play.Server.CHAT;
+    public static final IChatTypeInfo CHAT_TYPE_INFO = MCVersion.isLegacy() ? new ChatTypeLegacy() : new ChatTypeNormal();
 
     public WrapperPlayServerChat() {
         super(new PacketContainer(TYPE), TYPE);
@@ -55,12 +58,8 @@ public class WrapperPlayServerChat extends AbstractPacket {
         handle.getChatComponents().write(0, value);
     }
 
-    public ChatType getChatType() {
-        return handle.getChatTypes().read(0);
-    }
-
-    public void setChatType(ChatType type) {
-        handle.getChatTypes().write(0, type);
+    public void setChatType() {
+        CHAT_TYPE_INFO.setChatType(handle);
     }
 
     /**
@@ -77,7 +76,7 @@ public class WrapperPlayServerChat extends AbstractPacket {
         if (position != null) {
             return position;
         } else {
-            return getChatType().getId();
+            return CHAT_TYPE_INFO.getID(handle);
         }
     }
 
@@ -91,9 +90,6 @@ public class WrapperPlayServerChat extends AbstractPacket {
     public void setPosition(byte value) {
         handle.getBytes().writeSafely(0, value);
 
-        if (EnumWrappers.getChatTypeClass() != null) {
-            Arrays.stream(ChatType.values()).filter(t -> t.getId() == value).findAny()
-                    .ifPresent(t -> handle.getChatTypes().writeSafely(0, t));
-        }
+        CHAT_TYPE_INFO.onSetPosition(handle, value);
     }
 }

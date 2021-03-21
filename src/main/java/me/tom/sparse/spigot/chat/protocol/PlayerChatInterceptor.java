@@ -4,7 +4,6 @@ import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
-import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -103,7 +102,7 @@ public class PlayerChatInterceptor implements Listener {
         for (WrappedChatComponent components : queuedMessages) {
             WrapperPlayServerChat chat = new WrapperPlayServerChat();
             chat.setMessage(components);
-            chat.setChatType(EnumWrappers.ChatType.CHAT);
+            chat.setChatType();
             try {
                 ProtocolLibrary.getProtocolManager().sendServerPacket(player, chat.getHandle());
             } catch (InvocationTargetException e) {

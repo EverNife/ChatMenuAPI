@@ -18,7 +18,7 @@ public abstract class Element {
     protected int x, y;
 
     @Nullable
-    protected Sound clickSound = Sound.UI_BUTTON_CLICK;
+    protected Sound clickSound = null; //Sound.UI_BUTTON_CLICK;
     protected float clickVolume = 0.5f;
     protected float clickPitch = 1;
 
