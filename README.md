@@ -69,14 +69,14 @@ repositories {
 }
 
 dependencies {
-     implementation 'me.tom.sparse:ChatMenuAPI:VERSION'
+     implementation 'com.github.evernife:ChatMenuAPI:VERSION'
 }
 ```
 ###### Gradle KTS
 ```kotlin
 repositories {
     maven {
-        url = uri("https://dl.bintray.com/nahuld/minevictus") 
+        url = uri("https://jitpack.io") 
     }
 }
 
