@@ -44,18 +44,17 @@ Download `ChatMenuAPI.jar` from the releases page, then add it as a dependency i
 ###### Maven
 ```xml
 <repositories>
-  <repository>
-    <snapshots>
-      <enabled>false</enabled>
-    </snapshots>
-    <name>bintray</name>
-    <url>https://dl.bintray.com/nahuld/minevictus/</url>
-  </repository>
+  <repositories>
+    <repository>
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
+    </repository>
+  </repositories>
 </repositories>
 
 <dependencies>
   <dependency>
-    <groupId>me.tom.sparse</groupId>
+    <groupId>com.github.evernife</groupId>
     <artifactId>ChatMenuAPI</artifactId>
     <version>VERSION</version>
   </dependency>
@@ -65,7 +64,7 @@ Download `ChatMenuAPI.jar` from the releases page, then add it as a dependency i
 ```groovy
 repositories {
     maven {
-        url  'https://dl.bintray.com/nahuld/minevictus' 
+        url 'https://jitpack.io'
     }
 }
 
@@ -82,7 +81,7 @@ repositories {
 }
 
 dependencies {
-     implementation("me.tom.sparse:ChatMenuAPI:VERSION")
+     implementation 'com.github.evernife:ChatMenuAPI:VERSION'
 }
 ```
 **IMPORTANT!** If you are using this plugin bundled within others, you will need to initialize and disable the API manually, which you can do by adding the following methods to your JavaPlugin class.
