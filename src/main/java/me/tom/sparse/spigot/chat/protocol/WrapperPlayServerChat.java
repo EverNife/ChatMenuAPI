@@ -21,13 +21,17 @@ import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import me.tom.sparse.spigot.chat.protocol.compat.ChatTypeLegacy;
 import me.tom.sparse.spigot.chat.protocol.compat.ChatTypeNormal;
 import me.tom.sparse.spigot.chat.protocol.compat.IChatTypeInfo;
-import me.tom.sparse.spigot.chat.version.MCVersion;
-
-import java.util.Arrays;
 
 public class WrapperPlayServerChat extends AbstractPacket {
     public static final PacketType TYPE = PacketType.Play.Server.CHAT;
-    public static final IChatTypeInfo CHAT_TYPE_INFO = MCVersion.isLegacy() ? new ChatTypeLegacy() : new ChatTypeNormal();
+    public static IChatTypeInfo CHAT_TYPE_INFO;
+    static {
+        try {
+            CHAT_TYPE_INFO = new ChatTypeNormal(); //On legacy, this will throw an error
+        }catch (Throwable throwable){
+            CHAT_TYPE_INFO = new ChatTypeLegacy();
+        }
+    }
 
     public WrapperPlayServerChat() {
         super(new PacketContainer(TYPE), TYPE);
