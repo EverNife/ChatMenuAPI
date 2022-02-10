@@ -5,10 +5,6 @@ import com.comphenix.protocol.events.PacketContainer;
 //Legacy ProtocoLib (1.7.10) does not have ChatType Info, as there is only a single chat
 public class ChatTypeLegacy implements IChatTypeInfo{
 
-    public void onSetPosition(byte value){
-        //DoNothing
-    }
-
     @Override
     public void onSetPosition(PacketContainer handle, byte value) {
         //Do Nothing

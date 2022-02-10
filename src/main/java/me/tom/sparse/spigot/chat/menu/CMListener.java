@@ -57,13 +57,14 @@ public class CMListener implements Listener {
     public void onCommandPreprocess(PlayerCommandPreprocessEvent e) {
         String cmd = e.getMessage().substring(1);
         if (cmd.length() <= 0) return;
-        String[] unprocessedArgs = cmd.split(" ");
 
+        String[] unprocessedArgs = cmd.split(" ");
         String label = unprocessedArgs[0];
-        String[] args = new String[unprocessedArgs.length - 1];
-        System.arraycopy(unprocessedArgs, 1, args, 0, args.length);
 
         if (label.equalsIgnoreCase("cmapi")) {
+            String[] args = new String[unprocessedArgs.length - 1];
+            System.arraycopy(unprocessedArgs, 1, args, 0, args.length);
+
             e.setCancelled(true);
             command.onCommand(e.getPlayer(), null, label, args);
         }
