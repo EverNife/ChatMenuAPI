@@ -72,6 +72,10 @@ public final class ChatMenuAPI {
      */
     @NotNull
     public static PlayerChatInterceptor getChatIntercept() {
+        if (interceptor == null){
+            interceptor = new PlayerChatInterceptor(plugin);
+            new CMListener(plugin);
+        }
         return interceptor;
     }
 
@@ -174,12 +178,9 @@ public final class ChatMenuAPI {
 
         ChatMenuAPI.plugin = plugin;
 //		Bukkit.getPluginCommand("cmapi").setExecutor(new CMCommand());
-        new CMListener(plugin);
 
         if (consoleFilter)
             new LogFilter();
-
-        interceptor = new PlayerChatInterceptor(plugin);
     }
 
     /**
