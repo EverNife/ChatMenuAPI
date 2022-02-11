@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "br.com.finalcraft"
-version = "1.1.3"
+version = "1.1.3b"
 
 repositories {
     mavenCentral()
