@@ -4,6 +4,7 @@ import me.tom.sparse.spigot.chat.protocol.PlayerChatInterceptor;
 import me.tom.sparse.spigot.chat.util.LogFilter;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
 import org.bukkit.map.MapFont;
 import org.bukkit.map.MinecraftFont;
 import org.bukkit.plugin.Plugin;
@@ -20,6 +21,7 @@ public final class ChatMenuAPI {
 
     private static Plugin plugin;
     private static PlayerChatInterceptor interceptor;
+    private static CMListener listener;
 
     private ChatMenuAPI() {
     }
@@ -74,7 +76,7 @@ public final class ChatMenuAPI {
     public static PlayerChatInterceptor getChatIntercept() {
         if (interceptor == null){
             interceptor = new PlayerChatInterceptor(plugin);
-            new CMListener(plugin);
+            listener = new CMListener(plugin);
         }
         return interceptor;
     }
@@ -177,8 +179,8 @@ public final class ChatMenuAPI {
             return;
 
         ChatMenuAPI.plugin = plugin;
-//		Bukkit.getPluginCommand("cmapi").setExecutor(new CMCommand());
 
+        //Now registration of CommandListener and PacketInterceptor is made on demand (on first usage of ChatMenu.pause()
         if (consoleFilter)
             new LogFilter();
     }
@@ -193,6 +195,8 @@ public final class ChatMenuAPI {
             return;
 
         plugin = null;
-        interceptor.disable();
+
+        if (interceptor != null) interceptor.disable();
+        if (listener != null) HandlerList.unregisterAll(listener);
     }
 }
