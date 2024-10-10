@@ -33,6 +33,10 @@ public class CMListener implements Listener {
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
+    public Multimap<Player, ExpectedChat> getChatListeners() {
+        return CHAT_LISTENERS;
+    }
+
     /**
      * Expect a player's to chat a message.
      *
