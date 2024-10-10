@@ -35,33 +35,30 @@ public class PlayerChatInterceptor implements Listener {
             public void onPacketSending(PacketEvent event) {
                 PlayerMData playerMData = getMessageData(event.getPlayer());
 
-                boolean paused = playerMData.isPaused();
-                if (!paused){
+                if (playerMData.isPaused() == false){
                     return; //Early Return to prevent wasted processing
                 }
 
-                if (paused){
-                    WrapperPlayServerChat chat = new WrapperPlayServerChat(event.getPacket());
+                WrapperPlayServerChat chat = new WrapperPlayServerChat(event.getPacket());
 
-                    BaseComponent[] spigot = chat.getHandle().getSpecificModifier(BaseComponent[].class).read(0);
-                    WrappedChatComponent msg;
-                    if (spigot != null) {
-                        msg = WrappedChatComponent.fromJson(ComponentSerializer.toString(spigot));
-                    } else {
-                        msg = chat.getMessage();
+                BaseComponent[] spigot = chat.getHandle().getSpecificModifier(BaseComponent[].class).read(0);
+                WrappedChatComponent msg;
+                if (spigot != null) {
+                    msg = WrappedChatComponent.fromJson(ComponentSerializer.toString(spigot));
+                } else {
+                    msg = chat.getMessage();
+                }
+
+                boolean allowThisMessage = playerMData.hasAnyAllowedMessages() && playerMData.isAllowed(msg);
+
+                if (!allowThisMessage){ //If not allowed, add to queue to be sent on resume() and cancel the event
+                    while (playerMData.messageQueue.size() > 20) {
+                        playerMData.messageQueue.remove();
                     }
 
-                    boolean allowThisMessage = playerMData.hasAnyAllowedMessages() && playerMData.isAllowed(msg);
+                    playerMData.messageQueue.add(msg);
 
-                    if (!allowThisMessage){ //If not allowed, add to queue to be sent on resume() and cancel the event
-                        while (playerMData.messageQueue.size() > 20) {
-                            playerMData.messageQueue.remove();
-                        }
-
-                        playerMData.messageQueue.add(msg);
-
-                        event.setCancelled(true);
-                    }
+                    event.setCancelled(true);
                 }
             }
         });

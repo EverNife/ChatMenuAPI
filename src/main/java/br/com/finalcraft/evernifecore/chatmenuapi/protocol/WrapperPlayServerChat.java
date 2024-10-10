@@ -28,7 +28,7 @@ public class WrapperPlayServerChat extends AbstractPacket {
     static {
         try {
             CHAT_TYPE_INFO = new ChatTypeNormal(); //On legacy, this will throw an error
-        }catch (Throwable throwable){
+        }catch (Throwable ignored){
             CHAT_TYPE_INFO = new ChatTypeLegacy();
         }
     }
