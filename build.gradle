@@ -1,0 +1,110 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
+plugins {
+    id 'idea'
+    id 'java-library'
+    id 'maven-publish'
+}
+
+group = "br.com.finalcraft"
+version = "2.0.1"
+
+targetCompatibility = 1.8
+sourceCompatibility = 1.8
+
+compileJava.options.encoding = 'UTF-8'
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+javadoc {
+    options.encoding = 'UTF-8'
+}
+
+//This might keep function(parameter variable's Names) on the compiled jar
+compileJava.options.compilerArgs.add '-parameters'
+compileTestJava.options.compilerArgs.add '-parameters'
+
+
+repositories {
+    mavenCentral()
+
+    maven {
+        name = "papermc"
+        url = uri("https://papermc.io/repo/repository/maven-public/")
+    }
+
+    maven {
+        name = "aikar-repo"
+        url = uri("https://repo.aikar.co/content/groups/aikar/")
+    }
+
+    maven {
+        name = "proxi-nexus"
+        url = uri("https://nexus.proximyst.com/repository/maven-public/")
+    }
+
+    maven {
+        name = "dmulloy2-repo"
+        url = uri("https://repo.dmulloy2.net/nexus/repository/public/")
+    }
+    maven {
+        name = "petrus-repo"
+        url = uri("https://maven.petrus.dev/public")
+    }
+}
+
+dependencies {
+    compileOnly("com.destroystokyo.paper:paper-api:1.15-R0.1-SNAPSHOT")
+    compileOnly("com.comphenix.protocol:ProtocolLib:4.7.0")
+    compileOnly("org.jetbrains:annotations:19.0.0")
+    compileOnly("org.apache.logging.log4j:log4j-api:2.13.2")
+    compileOnly("org.apache.logging.log4j:log4j-core:2.13.2")
+    compileOnly("br.com.finalcraft:EverNifeCore:2.0.4")
+
+    compileOnly("org.projectlombok:lombok:1.18.24")
+    annotationProcessor("org.projectlombok:lombok:1.18.24")
+}
+
+// Task to create a JAR with the source files
+task sourcesJar(type: Jar) {
+    archiveClassifier.set('sources')
+    from sourceSets.main.allSource
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "PetrusRepo"
+            url = "https://maven.petrus.dev/public"
+            credentials {
+                username = System.env.PETRUSMAVEN_ACTOR
+                password = System.env.PETRUSMAVEN_TOKEN
+            }
+            authentication {
+                basic(BasicAuthentication)
+            }
+        }
+    }
+    publications {
+        petrus(MavenPublication) {
+            groupId = project.group
+            from(components.java)
+
+            // Include the sources JAR in the publication
+            artifact sourcesJar
+
+            pom.withXml {
+                asNode().appendNode('url','https://petrus.dev')
+
+                asNode().dependencies.'*'.each() {
+                    it.parent().remove(it) //Remove all dependencies from pom file
+                }
+            }
+        }
+    }
+}
