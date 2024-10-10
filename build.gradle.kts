@@ -44,6 +44,9 @@ dependencies {
     compileOnly("org.apache.logging.log4j:log4j-api:2.13.2")
     compileOnly("org.apache.logging.log4j:log4j-core:2.13.2")
     compileOnly("br.com.finalcraft:EverNifeCore:2.0.4")
+
+    compileOnly("org.projectlombok:lombok:1.18.24")
+    annotationProcessor("org.projectlombok:lombok:1.18.24")
 }
 
 configure<JavaPluginConvention> {
