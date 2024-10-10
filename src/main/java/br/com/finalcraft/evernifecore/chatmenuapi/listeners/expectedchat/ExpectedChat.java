@@ -16,7 +16,7 @@ public class ExpectedChat {
     private Runnable onExpireAction;
     private Runnable onPlayerQuitAction;
 
-    private transient boolean executeExpireEvenWhenPlayerQuits = true;
+    private transient boolean cancelExpirationActionOnPlayerQuit = true;
     private transient ScheduledFuture<?> future; //Holds the future of the expiration task
 
     private @Getter(AccessLevel.NONE) boolean wasConsumed = false;

@@ -94,7 +94,7 @@ public class CMListener implements Listener {
                     return;
                 }
 
-                onExpireAction.run();
+                expectedChat.getOnExpireAction().run();
             }, expiration, TimeUnit.MILLISECONDS);
             expectedChat.setFuture(future);
         }
@@ -110,7 +110,7 @@ public class CMListener implements Listener {
 
         Collection<ExpectedChat> listener = CHAT_LISTENERS.get(player);
 
-        for (ExpectedChat expectedChat : listener) {
+        expectations: for (ExpectedChat expectedChat : listener) {
 
             if (expectedChat.wasCancelled() || expectedChat.wasConsumed() || expectedChat.hasExpired()) {
                 CHAT_LISTENERS.remove(player, expectedChat);
@@ -120,26 +120,26 @@ public class CMListener implements Listener {
             IChatAction.ActionResult actionResult = expectedChat.getChatAction().onChat(e.getMessage());
 
             switch (actionResult){
-                case SUCCESS:
-                    CHAT_LISTENERS.remove(player, expectedChat);
-                    expectedChat.setWasConsumed(true);
-                    if (expectedChat.getFuture() != null){
-                        expectedChat.getFuture().cancel(false);
-                    }
-                    continue;
-
-                case SUCCESS_AND_CANCEL_CHAT_EVENT:
+                case SUCCESS_AND_CONSUME:
                     CHAT_LISTENERS.remove(player, expectedChat);
                     expectedChat.setWasConsumed(true);
                     e.setCancelled(true);
                     if (expectedChat.getFuture() != null){
                         expectedChat.getFuture().cancel(false);
                     }
-                    break;
+                    break expectations;
+
+                case SUCCESS:
+                    CHAT_LISTENERS.remove(player, expectedChat);
+                    expectedChat.setWasConsumed(true);
+                    if (expectedChat.getFuture() != null){
+                        expectedChat.getFuture().cancel(false);
+                    }
+                    continue expectations;
 
                 case IGNORE_CURRENT_MESSAGE:
-                    //The chat event was processed but not consumed
-                    break;
+                    //The chat event was processed, but maybe we should wait for the next message
+                    continue expectations;
             }
         }
     }
@@ -152,7 +152,7 @@ public class CMListener implements Listener {
         for (ExpectedChat expectedChat : expectedChats) {
             expectedChat.setWasCancelled(true);
 
-            if (expectedChat.getFuture() != null){
+            if (expectedChat.isCancelExpirationActionOnPlayerQuit() && expectedChat.getFuture() != null){
                 expectedChat.getFuture().cancel(false);
             }
 
@@ -196,7 +196,7 @@ public class CMListener implements Listener {
         public static enum ActionResult {
             SUCCESS,
             IGNORE_CURRENT_MESSAGE,
-            SUCCESS_AND_CANCEL_CHAT_EVENT
+            SUCCESS_AND_CONSUME
         }
     }
 

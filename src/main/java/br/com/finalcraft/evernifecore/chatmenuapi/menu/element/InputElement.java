@@ -168,7 +168,7 @@ public class InputElement extends Element {
             setValue(message);
             container.refresh();
 
-            return CMListener.IChatAction.ActionResult.SUCCESS_AND_CANCEL_CHAT_EVENT;
+            return CMListener.IChatAction.ActionResult.SUCCESS_AND_CONSUME;
         });
 
         return true;
