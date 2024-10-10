@@ -2,6 +2,7 @@ package br.com.finalcraft.evernifecore.chatmenuapi.listeners;
 
 import br.com.finalcraft.evernifecore.chatmenuapi.listeners.expectedchat.ExpectedChat;
 import br.com.finalcraft.evernifecore.chatmenuapi.menu.CMCommand;
+import br.com.finalcraft.evernifecore.scheduler.FCScheduler;
 import com.google.common.collect.*;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -16,6 +17,8 @@ import org.bukkit.plugin.Plugin;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 public class CMListener implements Listener {
 
@@ -33,28 +36,68 @@ public class CMListener implements Listener {
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
-    public void cancelAllExpectationsFor(Player player) {
-        Collection<ExpectedChat> expectedChats = CHAT_LISTENERS.removeAll(player);
-        expectedChats.forEach(ExpectedChat::cancel);
-    }
-
     /**
      * Expect a player's to chat a message.
+     *
+     * @param player The player to expect a chat from.
+     * @param chatAction The action to perform when the player chats.
      */
     public ExpectedChat expectPlayerChat(Player player, IChatAction chatAction) {
-        return expectPlayerChat(player, chatAction, 0);
+        return expectPlayerChat(player, chatAction, 0, null, null);
     }
 
     /**
      * Expect a player's to chat a message.
+     *
+     * @param player The player to expect a chat from.
+     * @param chatAction The action to perform when the player chats.
+     * @param expiration The time in milliseconds the wait for the chat.
      */
     public ExpectedChat expectPlayerChat(Player player, IChatAction chatAction, long expiration) {
-        if (player == null || !player.isOnline())
-            throw new IllegalArgumentException("Cannot wait for chat for a null/offline player.");
-        if (chatAction == null)
-            throw new IllegalArgumentException("Cannot call null function.");
+        return expectPlayerChat(player, chatAction, expiration, null, null);
+    }
 
-        ExpectedChat expectedChat = new ExpectedChat(player, chatAction, expiration);
+    /**
+     * Expect a player's to chat a message.
+     *
+     * @param player The player to expect a chat from.
+     * @param chatAction The action to perform when the player chats.
+     * @param expiration The time in milliseconds the wait for the chat.
+     * @param onExpireAction The action to perform when the chat expires.
+     */
+    public ExpectedChat expectPlayerChat(Player player, IChatAction chatAction, long expiration, Runnable onExpireAction) {
+        return expectPlayerChat(player, chatAction, expiration, onExpireAction, null);
+    }
+
+    /**
+     * Expect a player's to chat a message.
+     *
+     * @param player The player to expect a chat from.
+     * @param chatAction The action to perform when the player chats.
+     * @param expiration The time in milliseconds the wait for the chat.
+     * @param onExpireAction The action to perform when the chat expires.
+     * @param onPlayerQuitAction The action to perform when the player quits.
+     */
+    public ExpectedChat expectPlayerChat(Player player, CMListener.IChatAction chatAction, long expiration, Runnable onExpireAction, Runnable onPlayerQuitAction) {
+        if (player == null || !player.isOnline()) {
+            throw new IllegalArgumentException("Cannot wait for chat for a null/offline player.");
+        }
+        if (chatAction == null) {
+            throw new IllegalArgumentException("Cannot call null function.");
+        }
+
+        ExpectedChat expectedChat = new ExpectedChat(player, chatAction, expiration, onExpireAction, onPlayerQuitAction);
+
+        if (onExpireAction != null){
+            ScheduledFuture<?> future = FCScheduler.getScheduler().schedule(() -> {
+                if (expectedChat.wasConsumed() || expectedChat.wasCancelled()) {
+                    return;
+                }
+
+                onExpireAction.run();
+            }, expiration, TimeUnit.MILLISECONDS);
+            expectedChat.setFuture(future);
+        }
 
         CHAT_LISTENERS.put(player, expectedChat);
 
@@ -80,12 +123,18 @@ public class CMListener implements Listener {
                 case SUCCESS:
                     CHAT_LISTENERS.remove(player, expectedChat);
                     expectedChat.setWasConsumed(true);
+                    if (expectedChat.getFuture() != null){
+                        expectedChat.getFuture().cancel(false);
+                    }
                     continue;
 
                 case SUCCESS_AND_CANCEL_CHAT_EVENT:
                     CHAT_LISTENERS.remove(player, expectedChat);
                     expectedChat.setWasConsumed(true);
                     e.setCancelled(true);
+                    if (expectedChat.getFuture() != null){
+                        expectedChat.getFuture().cancel(false);
+                    }
                     break;
 
                 case IGNORE_CURRENT_MESSAGE:
@@ -97,7 +146,21 @@ public class CMListener implements Listener {
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent e) {
-        cancelAllExpectationsFor(e.getPlayer());
+        Player player = e.getPlayer();
+
+        Collection<ExpectedChat> expectedChats = CHAT_LISTENERS.removeAll(player);
+        for (ExpectedChat expectedChat : expectedChats) {
+            expectedChat.setWasCancelled(true);
+
+            if (expectedChat.getFuture() != null){
+                expectedChat.getFuture().cancel(false);
+            }
+
+            if (expectedChat.getOnPlayerQuitAction() != null){
+                expectedChat.getOnPlayerQuitAction().run();
+            }
+
+        }
     }
 
     @EventHandler(priority = EventPriority.LOWEST)

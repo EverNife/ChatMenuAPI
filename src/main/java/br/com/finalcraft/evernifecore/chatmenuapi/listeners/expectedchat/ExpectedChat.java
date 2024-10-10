@@ -6,23 +6,28 @@ import lombok.Data;
 import lombok.Getter;
 import org.bukkit.entity.Player;
 
+import java.util.concurrent.ScheduledFuture;
+
 @Data
 public class ExpectedChat {
     private Player player;
     private CMListener.IChatAction chatAction;
-    private long expiration = 0;
+    private long expiration;
+    private Runnable onExpireAction;
+    private Runnable onPlayerQuitAction;
+
+    private transient boolean executeExpireEvenWhenPlayerQuits = true;
+    private transient ScheduledFuture<?> future; //Holds the future of the expiration task
 
     private @Getter(AccessLevel.NONE) boolean wasConsumed = false;
     private @Getter(AccessLevel.NONE) boolean wasCancelled = false;
 
-    public ExpectedChat(Player player, CMListener.IChatAction chatAction, long expiration) {
+    public ExpectedChat(Player player, CMListener.IChatAction chatAction, long expiration, Runnable onExpireAction, Runnable onPlayerQuitAction) {
         this.player = player;
         this.chatAction = chatAction;
         this.expiration = expiration;
-    }
-
-    public void cancel() {
-        wasCancelled = true;
+        this.onExpireAction = onExpireAction;
+        this.onPlayerQuitAction = onPlayerQuitAction;
     }
 
     public boolean wasCancelled() {
