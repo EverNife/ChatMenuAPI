@@ -9,7 +9,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
 import me.tom.sparse.spigot.chat.menu.IElementContainer;
