@@ -1,7 +1,8 @@
 package br.com.finalcraft.evernifecore.chatmenuapi.listeners;
 
+import br.com.finalcraft.evernifecore.chatmenuapi.listeners.expectedchat.ExpectedChat;
 import br.com.finalcraft.evernifecore.chatmenuapi.menu.CMCommand;
-import lombok.Data;
+import com.google.common.collect.*;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -12,47 +13,91 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiFunction;
 
 public class CMListener implements Listener {
-    private Map<Player, BiFunction<Player, String, Boolean>> chatListeners = new ConcurrentHashMap<>();
 
-    public void cancelExpectation(Player player) {
-        chatListeners.remove(player);
-    }
+    private Multimap<Player, ExpectedChat> CHAT_LISTENERS = (Multimap<Player, ExpectedChat>)
+            Collections.synchronizedMap(
+                    (Map<? extends Player, ? extends ExpectedChat>) (Object) HashMultimap.create()
+            );
 
-    public void expectPlayerChat(Player player, BiFunction<Player, String, Boolean> function) {
-        if (player == null || !player.isOnline())
-            throw new IllegalArgumentException("Cannot wait for chat for a null/offline player.");
-        if (function == null)
-            throw new IllegalArgumentException("Cannot call null function.");
-
-        chatListeners.put(player, function);
-    }
-
-    private CMCommand command;
+    private final CMCommand command;
 
     public CMListener(Plugin plugin) {
+        HashMultimap<Object, Object> objectObjectHashMultimap = HashMultimap.create();
+
         command = new CMCommand();
         Bukkit.getPluginManager().registerEvents(this, plugin);
+    }
+
+    public void cancelAllExpectationsFor(Player player) {
+        Collection<ExpectedChat> expectedChats = CHAT_LISTENERS.removeAll(player);
+        expectedChats.forEach(ExpectedChat::cancel);
+    }
+
+    /**
+     * Expect a player's to chat a message.
+     */
+    public ExpectedChat expectPlayerChat(Player player, IChatAction chatAction) {
+        return expectPlayerChat(player, chatAction, 0);
+    }
+
+    /**
+     * Expect a player's to chat a message.
+     */
+    public ExpectedChat expectPlayerChat(Player player, IChatAction chatAction, long expiration) {
+        if (player == null || !player.isOnline())
+            throw new IllegalArgumentException("Cannot wait for chat for a null/offline player.");
+        if (chatAction == null)
+            throw new IllegalArgumentException("Cannot call null function.");
+
+        ExpectedChat expectedChat = new ExpectedChat(player, chatAction, expiration);
+
+        CHAT_LISTENERS.put(player, expectedChat);
+
+        return expectedChat;
     }
 
     @EventHandler
     public void onPlayerChat(AsyncPlayerChatEvent e) {
         Player player = e.getPlayer();
-        BiFunction<Player, String, Boolean> listener = chatListeners.get(player);
-        if (listener != null) {
-            e.setCancelled(true);
-            if (listener.apply(player, e.getMessage()))
-                chatListeners.remove(player);
+
+        Collection<ExpectedChat> listener = CHAT_LISTENERS.get(player);
+
+        for (ExpectedChat expectedChat : listener) {
+
+            if (expectedChat.wasCancelled() || expectedChat.wasConsumed() || expectedChat.hasExpired()) {
+                CHAT_LISTENERS.remove(player, expectedChat);
+                continue;
+            }
+
+            IChatAction.ActionResult actionResult = expectedChat.getChatAction().onChat(e.getMessage());
+
+            switch (actionResult){
+                case SUCCESS:
+                    CHAT_LISTENERS.remove(player, expectedChat);
+                    expectedChat.setWasConsumed(true);
+                    continue;
+
+                case SUCCESS_AND_CANCEL_CHAT_EVENT:
+                    CHAT_LISTENERS.remove(player, expectedChat);
+                    expectedChat.setWasConsumed(true);
+                    e.setCancelled(true);
+                    break;
+
+                case IGNORE_CURRENT_MESSAGE:
+                    //The chat event was processed but not consumed
+                    break;
+            }
         }
     }
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent e) {
-        cancelExpectation(e.getPlayer());
+        cancelAllExpectationsFor(e.getPlayer());
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
@@ -74,22 +119,23 @@ public class CMListener implements Listener {
         }
     }
 
-    @Data
-    public class ExpectedChat {
-        private Player player;
-        private BiFunction<Player, String, Boolean> function;
 
-        public ExpectedChat(Player player, BiFunction<Player, String, Boolean> function) {
-            this.player = player;
-            this.function = function;
-        }
+    public static interface IChatAction {
 
-        public Player getPlayer() {
-            return player;
-        }
+        /**
+         * @param message The message the player chatted.
+         *
+         * @return true if the chat message was consumed
+         *              and should not propagate further.
+         */
+        public ActionResult onChat(String message);
 
-        public BiFunction<Player, String, Boolean> getFunction() {
-            return function;
+        public static enum ActionResult {
+            SUCCESS,
+            IGNORE_CURRENT_MESSAGE,
+            SUCCESS_AND_CANCEL_CHAT_EVENT
         }
     }
+
+
 }

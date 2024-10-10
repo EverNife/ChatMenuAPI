@@ -1,5 +1,7 @@
 package br.com.finalcraft.evernifecore.chatmenuapi.menu.element;
 
+import br.com.finalcraft.evernifecore.chatmenuapi.listeners.CMListener;
+import br.com.finalcraft.evernifecore.chatmenuapi.listeners.expectedchat.ExpectedChat;
 import br.com.finalcraft.evernifecore.chatmenuapi.menu.ChatMenuAPI;
 import br.com.finalcraft.evernifecore.chatmenuapi.menu.IElementContainer;
 import br.com.finalcraft.evernifecore.chatmenuapi.util.State;
@@ -24,6 +26,7 @@ public class InputElement extends Element {
 
     protected int width;
     private boolean editing;
+    private transient ExpectedChat expectedChat;
 
     private static final FancyText DEFAULT_TOO_LONG = new FancyText("§4Too long")
             .setHoverText("The text is too long to fit!" +
@@ -144,19 +147,29 @@ public class InputElement extends Element {
 
     public boolean onClick(@NotNull IElementContainer container, @NotNull Player player) {
         super.onClick(container, player);
-        container.getElements().stream().filter(it -> it instanceof InputElement && it != this).map(it -> (InputElement) it).forEach(it -> it.editing = false);
+
+        for (Element element : container.getElements()) {
+            if (element instanceof InputElement && element != this) {
+                //Disable editing on all other elements on the same container
+                ((InputElement) element).editing = false;
+            }
+        }
+
         editing = !editing;
 
-        if (editing) {
-            ChatMenuAPI.getChatListener().expectPlayerChat(player, (p, m) -> {
-                editing = false;
-                setValue(m);
-                container.refresh();
-                return true;
-            });
-        } else {
-            ChatMenuAPI.getChatListener().cancelExpectation(player);
+        if (expectedChat != null) {
+            expectedChat.cancel();
+            expectedChat = null;
         }
+
+        expectedChat = ChatMenuAPI.getChatListener().expectPlayerChat(player, (message) -> {
+
+            editing = false;
+            setValue(message);
+            container.refresh();
+
+            return CMListener.IChatAction.ActionResult.SUCCESS_AND_CANCEL_CHAT_EVENT;
+        });
 
         return true;
     }
