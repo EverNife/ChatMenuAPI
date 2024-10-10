@@ -1,102 +1,50 @@
-[![Download](https://api.bintray.com/packages/nahuld/minevictus/ChatMenuAPI/images/download.svg)](https://bintray.com/nahuld/minevictus/ChatMenuAPI/_latestVersion)
-
-# ChatMenuAPI
+# ChatMenuAPI - EverNifeCore's Version
 An API for making menus inside Minecraft's chat.
 This API treats Minecraft's chat like a 2D grid, allowing you to position elements freely in chat.
 
 ### Fork
 
-This is a fork of VGL for Minevictus where we updated the API to use Gradle, with the latest version of PaperMC. As well as setting up releases and publishing it to maven repositories for ease of access.
+This is a fork of a fork of a fork... from the original ChatMenuAPI by timtomtim7.\
+It has some small changes and optimizations on the code.
 
-## Preview
-![](https://sparse.blue/files/k0ejrc.gif)
+### EverNifeCore
+
+This fork is meant to be embedded on the **[EverNifeCore](https://github.com/EverNife/EverNifeCore)** plugin!\
+This fork has many changes to fit the needs of the EverNifeCore plugin.
 
 ---
 
 ## Contents
 * [ChatMenuAPI](#chatmenuapi)
-  - [Preview](#preview)
-  - [Contents](#contents)
   - [Usage](#usage)
     + [Setup](#setup)
     + [ChatMenu](#chatmenu)
     + [Element](#element)
     + [States](#states)
     + [Displaying](#displaying)
-  - [Links](#links)
 
 ---
 
 ## Usage
 
-### Setup
-
 #### Requirements
 - JDK 8 or above.
+- EverNifeCore
 
-#### Download:
-Download `ChatMenuAPI.jar` from the releases page, then add it as a dependency in your local workspace.
+#### Setup
+> Replace `VERSION` with a specific version.
 
-#### Gradle or Maven
-> Replace `VERSION` with a specific version. The latest version which can be found at
-> the "Download" button or the Bintray page.
-
-###### Maven
-```xml
-<repositories>
-  <repositories>
-    <repository>
-      <id>jitpack.io</id>
-      <url>https://jitpack.io</url>
-    </repository>
-  </repositories>
-</repositories>
-
-<dependencies>
-  <dependency>
-    <groupId>com.github.evernife</groupId>
-    <artifactId>ChatMenuAPI</artifactId>
-    <version>VERSION</version>
-  </dependency>
-</dependencies>
-```
-###### Gradle
 ```groovy
 repositories {
     maven {
-        url 'https://jitpack.io'
+        url 'https://maven.petrus.dev/public'
     }
 }
 
 dependencies {
-     implementation 'com.github.evernife:ChatMenuAPI:VERSION'
+     implementation 'br.com.finalcraft:ChatMenuAPI:VERSION'
 }
 ```
-###### Gradle KTS
-```kotlin
-repositories {
-    maven {
-        url = uri("https://jitpack.io") 
-    }
-}
-
-dependencies {
-     implementation 'com.github.evernife:ChatMenuAPI:VERSION'
-}
-```
-**IMPORTANT!** If you are using this plugin bundled within others, you will need to initialize and disable the API manually, which you can do by adding the following methods to your JavaPlugin class.
-```java
-@Override
-public void onEnable() {
-    ChatMenuAPI.init(this);
-}    
-
-@Override
-public void onDisable() {
-    ChatMenuAPI.disable();
-}
-```
-
 ### ChatMenu
 To create a menu, just create a new instance of `ChatMenu`:
 ```Java
@@ -153,7 +101,3 @@ You can display a menu using `ChatMenu#openFor(Player player)`:
 Player p = ...;
 menu.openFor(p);
 ```
-
-## Links
-* [Download](https://www.spigotmc.org/resources/chatmenuapi.45144/)
-* [JavaDoc](https://sparse.blue/docs/ChatMenuAPI/index.html)
