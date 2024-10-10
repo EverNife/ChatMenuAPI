@@ -31,6 +31,10 @@ repositories {
         name = "dmulloy2-repo"
         url = uri("https://repo.dmulloy2.net/nexus/repository/public/")
     }
+    maven {
+        name = "petrus-repo"
+        url = uri("https://maven.petrus.dev/public")
+    }
 }
 
 dependencies {
@@ -39,6 +43,7 @@ dependencies {
     compileOnly("org.jetbrains:annotations:19.0.0")
     compileOnly("org.apache.logging.log4j:log4j-api:2.13.2")
     compileOnly("org.apache.logging.log4j:log4j-core:2.13.2")
+    compileOnly("br.com.finalcraft:EverNifeCore:2.0.4")
 }
 
 configure<JavaPluginConvention> {

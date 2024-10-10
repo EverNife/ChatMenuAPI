@@ -1,5 +1,7 @@
 package me.tom.sparse.spigot.chat.menu.element;
 
+import br.com.finalcraft.evernifecore.sound.FCSound;
+import br.com.finalcraft.evernifecore.util.FCSoundUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,7 +20,7 @@ public abstract class Element {
     protected int x, y;
 
     @Nullable
-    protected Sound clickSound = null; //Sound.UI_BUTTON_CLICK;
+    protected FCSound clickSound = null; //Sound.UI_BUTTON_CLICK;
     protected float clickVolume = 0.5f;
     protected float clickPitch = 1;
 
@@ -67,7 +69,7 @@ public abstract class Element {
      * @return the sound played when a player clicks this element
      */
     @Nullable
-    public Sound getClickSound() {
+    public FCSound getClickSound() {
         return clickSound;
     }
 
@@ -76,7 +78,7 @@ public abstract class Element {
      *
      * @param clickSound the new sound
      */
-    public void setClickSound(@NotNull Sound clickSound) {
+    public void setClickSound(@NotNull FCSound clickSound) {
         this.clickSound = clickSound;
     }
 
@@ -211,7 +213,7 @@ public abstract class Element {
      */
     public boolean onClick(@NotNull IElementContainer container, @NotNull Player player) {
         if (clickSound != null)
-            player.playSound(player.getEyeLocation(), clickSound, clickVolume, clickPitch);
+            FCSoundUtil.playSoundFor(clickSound.getKey(), player, player.getEyeLocation(), clickVolume, clickPitch);
         return true;
     }
 
