@@ -22,10 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 public class CMListener implements Listener {
 
-    private Multimap<Player, ExpectedChat> CHAT_LISTENERS = (Multimap<Player, ExpectedChat>)
-            Collections.synchronizedMap(
-                    (Map<? extends Player, ? extends ExpectedChat>) (Object) HashMultimap.create()
-            );
+    private Multimap<Player, ExpectedChat> CHAT_LISTENERS = Multimaps.synchronizedMultimap(HashMultimap.create());
 
     private final CMCommand command;
 
