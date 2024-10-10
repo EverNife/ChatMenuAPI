@@ -1,6 +1,7 @@
 package br.com.finalcraft.evernifecore.chatmenuapi.util;
 
 import br.com.finalcraft.evernifecore.chatmenuapi.menu.ChatMenuAPI;
+import br.com.finalcraft.evernifecore.fancytext.FancyText;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.jetbrains.annotations.NotNull;
@@ -35,7 +36,12 @@ public class Text {
         calculateWidth();
     }
 
-    /**
+    public Text(@NotNull FancyText fancyText) {
+        components.addAll(fancyText.getTextComponents(""));
+        calculateWidth();
+    }
+
+                /**
      * Constructs a {@code Text} object with the provided components
      *
      * @param components the starting components
