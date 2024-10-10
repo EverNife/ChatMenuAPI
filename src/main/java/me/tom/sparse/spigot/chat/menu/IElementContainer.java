@@ -1,10 +1,9 @@
 package me.tom.sparse.spigot.chat.menu;
 
-import java.util.List;
-
+import me.tom.sparse.spigot.chat.menu.element.Element;
 import org.bukkit.entity.Player;
 
-import me.tom.sparse.spigot.chat.menu.element.Element;
+import java.util.List;
 
 public interface IElementContainer {
     /**

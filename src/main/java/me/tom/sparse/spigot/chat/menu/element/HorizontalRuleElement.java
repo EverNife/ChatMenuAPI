@@ -1,14 +1,13 @@
 package me.tom.sparse.spigot.chat.menu.element;
 
-import org.jetbrains.annotations.NotNull;
-
-import java.util.Collections;
-import java.util.List;
-
 import me.tom.sparse.spigot.chat.menu.ChatMenuAPI;
 import me.tom.sparse.spigot.chat.menu.IElementContainer;
 import me.tom.sparse.spigot.chat.util.Text;
 import me.tom.sparse.spigot.chat.util.TextUtil;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Collections;
+import java.util.List;
 
 public class HorizontalRuleElement extends Element {
     private final String text;

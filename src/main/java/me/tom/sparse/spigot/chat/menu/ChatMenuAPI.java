@@ -1,29 +1,30 @@
 package me.tom.sparse.spigot.chat.menu;
 
+import me.tom.sparse.spigot.chat.listeners.CMListener;
 import me.tom.sparse.spigot.chat.protocol.PlayerChatInterceptor;
-import me.tom.sparse.spigot.chat.util.LogFilter;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.event.HandlerList;
 import org.bukkit.map.MapFont;
 import org.bukkit.map.MinecraftFont;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ThreadLocalRandom;
 
 public final class ChatMenuAPI {
     private static final Map<String, ChatMenu> MENUS = new ConcurrentHashMap<>();
     private static final Map<Player, ChatMenu> OPENED_MENUS = new ConcurrentHashMap<>();
 
-    private static Plugin plugin;
+    private static final Plugin plugin = JavaPlugin.getProvidingPlugin(ChatMenuAPI.class);
     private static PlayerChatInterceptor interceptor;
     private static CMListener listener;
 
     private ChatMenuAPI() {
+
     }
 
     /**
@@ -38,47 +39,21 @@ public final class ChatMenuAPI {
     /**
      * @param player the player whose current menu should be returned
      * @param menu   the menu to set as current, or {@code null} if you want to close the current menu.
-     */
-    public static void setCurrentMenu(@NotNull Player player, @Nullable ChatMenu menu) {
-        ChatMenu old = OPENED_MENUS.remove(player);
-        if (old != null && old != menu) old.onClosed(player);
-        if (menu != null) OPENED_MENUS.put(player, menu);
-    }
-
-    @NotNull
-    static String registerMenu(ChatMenu menu) {
-        String id = generateIdentifier();
-        MENUS.put(id, menu);
-        return id;
-    }
-
-    static void unregisterMenu(@NotNull ChatMenu menu) {
-        MENUS.values().remove(menu);
-    }
-
-    @NotNull
-    private static String generateIdentifier() {
-        String result = null;
-        while (result == null || MENUS.containsKey(result)) {
-            int id = ThreadLocalRandom.current().nextInt(0, 9999);
-            result = id + "";
-        }
-
-        return result;
-    }
-
-    /**
-     * Gets the current {@link PlayerChatInterceptor}
      *
-     * @return the {@link PlayerChatInterceptor}
+     * @return the menu the player previously had open, or {@code null} if no menu was open.
      */
-    @NotNull
-    public static PlayerChatInterceptor getChatIntercept() {
-        if (interceptor == null){
-            interceptor = new PlayerChatInterceptor(plugin);
-            listener = new CMListener(plugin);
+    public static ChatMenu setCurrentMenu(@NotNull Player player, @Nullable ChatMenu menu) {
+        ChatMenu old = OPENED_MENUS.remove(player);
+
+        if (old != null && old != menu) {
+            old.onClosed(player);
         }
-        return interceptor;
+
+        if (menu != null) {
+            OPENED_MENUS.put(player, menu);
+        }
+
+        return old;
     }
 
     /**
@@ -150,53 +125,53 @@ public final class ChatMenuAPI {
         }
     }
 
-    static ChatMenu getMenu(String id) {
+    // -----------------------------------------------------------------------------------------------------------------
+    //  Listener and Interceptor - Registered on Demand
+    // -----------------------------------------------------------------------------------------------------------------
+
+    /**
+     * Gets the current {@link PlayerChatInterceptor}
+     *
+     * @return the {@link PlayerChatInterceptor}
+     */
+    @NotNull
+    public static PlayerChatInterceptor getChatIntercept() {
+        if (interceptor == null){
+            interceptor = new PlayerChatInterceptor(plugin);
+        }
+        return interceptor;
+    }
+
+    /**
+     * Gets the current {@link CMListener}
+     *
+     * @return the {@link CMListener}
+     */
+    @NotNull
+    public static CMListener getChatListener() {
+        if (listener == null){
+            listener = new CMListener(plugin);
+        }
+        return listener;
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    //  Private/Protected API
+    // -----------------------------------------------------------------------------------------------------------------
+
+    @NotNull
+    protected static String registerMenu(ChatMenu menu) {
+        String id = UUID.randomUUID().toString();
+        MENUS.put(id, menu);
+        return id;
+    }
+
+    protected static void unregisterMenu(@NotNull ChatMenu menu) {
+        MENUS.values().remove(menu);
+    }
+
+    protected static ChatMenu getMenu(String id) {
         return MENUS.get(id);
     }
 
-    /**
-     * Initializer to prevent breaking backwards compatibility.
-     *
-     * Initializes all the necessary things for the ChatMenuAPI to function. This method can only be called once.
-     *
-     * @param plugin the plugin to initialize everything with, including listeners and scheduled tasks
-     */
-    public static void init(@NotNull Plugin plugin) {
-        init(plugin, true);
-    }
-
-    /**
-     * <b>This method should only be called by you if you're including this API inside your plugin.</b>
-     * <br>
-     * Initializes all the necessary things for the ChatMenuAPI to function. This method can only be called once.
-     * Here you can specify whether you want to filter the use of the command.
-     *
-     * @param plugin the plugin to initialize everything with, including listeners and scheduled tasks
-     * @param consoleFilter Filter /cmapi command on the console
-     */
-    public static void init(@NotNull Plugin plugin, boolean consoleFilter) {
-        if (ChatMenuAPI.plugin != null)
-            return;
-
-        ChatMenuAPI.plugin = plugin;
-
-        //Now registration of CommandListener and PacketInterceptor is made on demand (on first usage of ChatMenu.pause()
-        if (consoleFilter)
-            new LogFilter();
-    }
-
-    /**
-     * <b>This method should only be called by you if you're including this API inside your plugin.</b>
-     * <br>
-     * Disables everything necessary for this API to be reloaded properly without restarting.
-     */
-    public static void disable() {
-        if (plugin == null)
-            return;
-
-        plugin = null;
-
-        if (interceptor != null) interceptor.disable();
-        if (listener != null) HandlerList.unregisterAll(listener);
-    }
 }

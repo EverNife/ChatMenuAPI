@@ -1,8 +1,8 @@
 package me.tom.sparse.spigot.chat.util;
 
-import java.util.Arrays;
-
 import me.tom.sparse.spigot.chat.menu.ChatMenuAPI;
+
+import java.util.Arrays;
 
 public final class TextUtil {
     public static String generateSpaces(int count) {

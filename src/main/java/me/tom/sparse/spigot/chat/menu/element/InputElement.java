@@ -1,21 +1,17 @@
 package me.tom.sparse.spigot.chat.menu.element;
 
+import me.tom.sparse.spigot.chat.menu.ChatMenuAPI;
+import me.tom.sparse.spigot.chat.menu.IElementContainer;
+import me.tom.sparse.spigot.chat.util.State;
+import me.tom.sparse.spigot.chat.util.Text;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
-
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
-
-import org.bukkit.entity.Player;
-
-import me.tom.sparse.spigot.chat.menu.CMListener;
-import me.tom.sparse.spigot.chat.menu.ChatMenuAPI;
-import me.tom.sparse.spigot.chat.menu.IElementContainer;
-import me.tom.sparse.spigot.chat.util.State;
-import me.tom.sparse.spigot.chat.util.Text;
 
 public class InputElement extends Element {
     @NotNull
@@ -92,14 +88,14 @@ public class InputElement extends Element {
         editing = !editing;
 
         if (editing) {
-            CMListener.expectPlayerChat(player, (p, m) -> {
+            ChatMenuAPI.getChatListener().expectPlayerChat(player, (p, m) -> {
                 editing = false;
                 setValue(m);
                 container.refresh();
                 return true;
             });
         } else {
-            CMListener.cancelExpectation(player);
+            ChatMenuAPI.getChatListener().cancelExpectation(player);
         }
 
         return true;

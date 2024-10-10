@@ -1,21 +1,19 @@
 package me.tom.sparse.spigot.chat.menu.element;
 
+import me.tom.sparse.spigot.chat.menu.ChatMenuAPI;
+import me.tom.sparse.spigot.chat.menu.IElementContainer;
+import me.tom.sparse.spigot.chat.util.State;
+import me.tom.sparse.spigot.chat.util.Text;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import me.tom.sparse.spigot.chat.menu.ChatMenuAPI;
-import me.tom.sparse.spigot.chat.menu.IElementContainer;
-import me.tom.sparse.spigot.chat.util.State;
-import me.tom.sparse.spigot.chat.util.Text;
 
 /**
  * A boolean element. Basically a checkbox (without the box).

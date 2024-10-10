@@ -1,9 +1,7 @@
-package me.tom.sparse.spigot.chat.menu;
+package me.tom.sparse.spigot.chat.listeners;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiFunction;
-
+import lombok.Data;
+import me.tom.sparse.spigot.chat.menu.CMCommand;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -14,14 +12,18 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
 
-public class CMListener implements Listener {
-    private static Map<Player, BiFunction<Player, String, Boolean>> chatListeners = new ConcurrentHashMap<>();
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
 
-    public static void cancelExpectation(Player player) {
+public class CMListener implements Listener {
+    private Map<Player, BiFunction<Player, String, Boolean>> chatListeners = new ConcurrentHashMap<>();
+
+    public void cancelExpectation(Player player) {
         chatListeners.remove(player);
     }
 
-    public static void expectPlayerChat(Player player, BiFunction<Player, String, Boolean> function) {
+    public void expectPlayerChat(Player player, BiFunction<Player, String, Boolean> function) {
         if (player == null || !player.isOnline())
             throw new IllegalArgumentException("Cannot wait for chat for a null/offline player.");
         if (function == null)
@@ -32,7 +34,7 @@ public class CMListener implements Listener {
 
     private CMCommand command;
 
-    CMListener(Plugin plugin) {
+    public CMListener(Plugin plugin) {
         command = new CMCommand();
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
@@ -56,7 +58,9 @@ public class CMListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onCommandPreprocess(PlayerCommandPreprocessEvent e) {
         String cmd = e.getMessage().substring(1);
-        if (cmd.length() <= 0) return;
+        if (cmd.length() == 0){
+            return;
+        }
 
         String[] unprocessedArgs = cmd.split(" ");
         String label = unprocessedArgs[0];
@@ -67,6 +71,25 @@ public class CMListener implements Listener {
 
             e.setCancelled(true);
             command.onCommand(e.getPlayer(), null, label, args);
+        }
+    }
+
+    @Data
+    public class ExpectedChat {
+        private Player player;
+        private BiFunction<Player, String, Boolean> function;
+
+        public ExpectedChat(Player player, BiFunction<Player, String, Boolean> function) {
+            this.player = player;
+            this.function = function;
+        }
+
+        public Player getPlayer() {
+            return player;
+        }
+
+        public BiFunction<Player, String, Boolean> getFunction() {
+            return function;
         }
     }
 }

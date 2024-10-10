@@ -1,26 +1,16 @@
 package me.tom.sparse.spigot.chat.menu;
 
-import net.md_5.bungee.api.chat.BaseComponent;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.bukkit.entity.Player;
-
 import me.tom.sparse.spigot.chat.menu.element.ButtonElement;
 import me.tom.sparse.spigot.chat.menu.element.Element;
 import me.tom.sparse.spigot.chat.protocol.PlayerChatInterceptor;
 import me.tom.sparse.spigot.chat.util.Text;
+import net.md_5.bungee.api.chat.BaseComponent;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ChatMenu implements IElementContainer {
     @NotNull

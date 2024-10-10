@@ -1,17 +1,11 @@
 package me.tom.sparse.spigot.chat.util;
 
+import me.tom.sparse.spigot.chat.menu.ChatMenuAPI;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
-
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
-import me.tom.sparse.spigot.chat.menu.ChatMenuAPI;
+import java.util.*;
 
 /**
  * BaseComponent[] wrapper with cached width

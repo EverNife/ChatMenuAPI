@@ -1,17 +1,11 @@
 package me.tom.sparse.spigot.chat.menu.element;
 
-import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-
-import org.bukkit.entity.Player;
-
 import me.tom.sparse.spigot.chat.menu.IElementContainer;
 import me.tom.sparse.spigot.chat.util.Text;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.*;
 
 public class GroupElement extends Element implements IElementContainer {
     @NotNull

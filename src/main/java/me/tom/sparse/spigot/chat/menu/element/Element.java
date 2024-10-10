@@ -2,18 +2,16 @@ package me.tom.sparse.spigot.chat.menu.element;
 
 import br.com.finalcraft.evernifecore.sound.FCSound;
 import br.com.finalcraft.evernifecore.util.FCSoundUtil;
+import me.tom.sparse.spigot.chat.menu.IElementContainer;
+import me.tom.sparse.spigot.chat.util.State;
+import me.tom.sparse.spigot.chat.util.Text;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
-import org.bukkit.entity.Player;
-
-import me.tom.sparse.spigot.chat.menu.IElementContainer;
-import me.tom.sparse.spigot.chat.util.State;
-import me.tom.sparse.spigot.chat.util.Text;
 
 public abstract class Element {
     protected int x, y;
