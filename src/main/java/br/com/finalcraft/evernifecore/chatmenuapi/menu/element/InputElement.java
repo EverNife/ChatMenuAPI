@@ -4,6 +4,10 @@ import br.com.finalcraft.evernifecore.chatmenuapi.menu.ChatMenuAPI;
 import br.com.finalcraft.evernifecore.chatmenuapi.menu.IElementContainer;
 import br.com.finalcraft.evernifecore.chatmenuapi.util.State;
 import br.com.finalcraft.evernifecore.chatmenuapi.util.Text;
+import br.com.finalcraft.evernifecore.fancytext.FancyText;
+import br.com.finalcraft.evernifecore.locale.FCLocale;
+import br.com.finalcraft.evernifecore.locale.LocaleMessage;
+import br.com.finalcraft.evernifecore.locale.LocaleType;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import org.bukkit.entity.Player;
@@ -15,10 +19,31 @@ import java.util.List;
 
 public class InputElement extends Element {
     @NotNull
-    public final State<String> value;
+    private final State<String> value;
+    private final FancyText tooLong;
 
     protected int width;
     private boolean editing;
+
+    private static final FancyText DEFAULT_TOO_LONG = new FancyText("§4Too long")
+            .setHoverText("The text is too long to fit!" +
+                    "\n" +
+                    "\nCurrent Value: §e%value%"
+            );
+
+    @FCLocale(lang = LocaleType.EN_US,
+            text = "§4Too long",
+            hover = "The text is too long to fit!" +
+                    "\n" +
+                    "\nCurrent Value: §e%value%"
+    )
+    @FCLocale(lang = LocaleType.PT_BR,
+            text = "§4Muito longo",
+            hover = "O texto é muito longo para caber!" +
+                    "\n" +
+                    "\nValor Atual: §e%value%"
+    )
+    private static LocaleMessage TOO_LONG;
 
     /**
      * Constructs a new {@code InputElement}
@@ -32,6 +57,23 @@ public class InputElement extends Element {
         super(x, y);
         this.width = width;
         this.value = new State<>(value);
+        this.tooLong = null;
+    }
+
+    /**
+     * Constructs a new {@code InputElement}
+     *
+     * @param x     the x coordinate
+     * @param y     the y coordinate
+     * @param width the max width of the text
+     * @param value the starting text
+     * @param tooLong the text to display if the text is too long
+     */
+    public InputElement(int x, int y, int width, @NotNull String value, FancyText tooLong) {
+        super(x, y);
+        this.width = width;
+        this.value = new State<>(value);
+        this.tooLong = tooLong;
     }
 
     /**
@@ -66,15 +108,33 @@ public class InputElement extends Element {
         ClickEvent click = new ClickEvent(ClickEvent.Action.RUN_COMMAND, context.getCommand(this));
 
         String current = value.getOptionalCurrent().orElse("");
-        boolean tooLong = ChatMenuAPI.getWidth(current) > width;
+        boolean contentIsTooLong = ChatMenuAPI.getWidth(current) > width;
 
-        Text text = new Text(tooLong ? "Too long" : current);
+        Text text;
+
+        if (contentIsTooLong){
+            FancyText tooLongFancyText = null;
+
+            if (contentIsTooLong){
+                if (this.tooLong != null) {
+                    tooLongFancyText = this.tooLong.clone().replace("%value%", current);
+                } else if (TOO_LONG != null) {
+                    tooLongFancyText = TOO_LONG.getDefaultFancyText().clone().replace("%value%", current);
+                }else {
+                    tooLongFancyText = DEFAULT_TOO_LONG.clone().replace("%value%", current);
+                }
+            }
+
+            text = new Text(tooLongFancyText);
+        }else {
+            text = new Text(current);
+        }
         text.expandToWidth(width);
+
         text.getComponents().forEach(it -> {
-            if (tooLong)
-                it.setColor(ChatColor.RED);
-            if (editing)
+            if (editing){
                 it.setColor(ChatColor.GRAY);
+            }
             it.setUnderlined(true);
             it.setClickEvent(click);
         });
