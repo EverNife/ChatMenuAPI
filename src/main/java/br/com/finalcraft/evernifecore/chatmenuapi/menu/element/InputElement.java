@@ -158,7 +158,7 @@ public class InputElement extends Element {
         editing = !editing;
 
         if (expectedChat != null) {
-            expectedChat.cancel();
+            expectedChat.setWasCancelled(true);
             expectedChat = null;
         }
 
