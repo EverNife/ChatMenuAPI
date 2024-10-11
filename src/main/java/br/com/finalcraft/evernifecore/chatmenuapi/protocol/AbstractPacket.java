@@ -15,6 +15,8 @@
  */
 package br.com.finalcraft.evernifecore.chatmenuapi.protocol;
 
+import br.com.finalcraft.evernifecore.reflection.MethodInvoker;
+import br.com.finalcraft.evernifecore.util.FCReflectionUtil;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
@@ -63,11 +65,20 @@ public abstract class AbstractPacket {
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(receiver,
                     getHandle());
-        } catch (InvocationTargetException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Cannot send packet.", e);
         }
     }
 
+    private static MethodInvoker ProtocolManager_recieveClientPacket = null; static {
+        try {
+            //On older versions there was a TYPO on this method, so we need to check if it exists
+            // Check https://github.com/dmulloy2/ProtocolLib/issues/1552
+            ProtocolManager_recieveClientPacket = FCReflectionUtil.getMethod(ProtocolLibrary.getProtocolManager().getClass(), "recieveClientPacket");
+        }catch (Throwable ignored){
+
+        }
+    }
     /**
      * Simulate receiving the current packet from the given sender.
      *
@@ -79,8 +90,12 @@ public abstract class AbstractPacket {
     @Deprecated
     public void recievePacket(Player sender) {
         try {
-            ProtocolLibrary.getProtocolManager().recieveClientPacket(sender,
-                    getHandle());
+            if (ProtocolManager_recieveClientPacket != null){
+                ProtocolManager_recieveClientPacket.invoke(ProtocolLibrary.getProtocolManager(), sender, getHandle());
+            }else {
+                ProtocolLibrary.getProtocolManager().receiveClientPacket(sender,
+                        getHandle());
+            }
         } catch (Exception e) {
             throw new RuntimeException("Cannot recieve packet.", e);
         }
@@ -94,8 +109,12 @@ public abstract class AbstractPacket {
      */
     public void receivePacket(Player sender) {
         try {
-            ProtocolLibrary.getProtocolManager().recieveClientPacket(sender,
-                    getHandle());
+            if (ProtocolManager_recieveClientPacket != null){
+                ProtocolManager_recieveClientPacket.invoke(ProtocolLibrary.getProtocolManager(), sender, getHandle());
+            }else {
+                ProtocolLibrary.getProtocolManager().receiveClientPacket(sender,
+                        getHandle());
+            }
         } catch (Exception e) {
             throw new RuntimeException("Cannot receive packet.", e);
         }
