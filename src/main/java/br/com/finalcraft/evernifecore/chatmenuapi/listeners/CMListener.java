@@ -28,8 +28,6 @@ public class CMListener implements Listener {
     private final CMCommand command;
 
     public CMListener(Plugin plugin) {
-        HashMultimap<Object, Object> objectObjectHashMultimap = HashMultimap.create();
-
         command = new CMCommand();
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
