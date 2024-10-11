@@ -138,6 +138,7 @@ public final class ChatMenuAPI {
     public static PlayerChatInterceptor getChatIntercept() {
         if (interceptor == null){
             interceptor = new PlayerChatInterceptor(plugin);
+            getChatListener(); //Make sure the chat listener is registered as well in this case
         }
         return interceptor;
     }
