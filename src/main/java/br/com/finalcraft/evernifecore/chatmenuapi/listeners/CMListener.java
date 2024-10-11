@@ -3,7 +3,9 @@ package br.com.finalcraft.evernifecore.chatmenuapi.listeners;
 import br.com.finalcraft.evernifecore.chatmenuapi.listeners.expectedchat.ExpectedChat;
 import br.com.finalcraft.evernifecore.chatmenuapi.menu.CMCommand;
 import br.com.finalcraft.evernifecore.scheduler.FCScheduler;
-import com.google.common.collect.*;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -15,14 +17,13 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class CMListener implements Listener {
 
-    private Multimap<Player, ExpectedChat> CHAT_LISTENERS = Multimaps.synchronizedMultimap(HashMultimap.create());
+    private Multimap<UUID, ExpectedChat> CHAT_LISTENERS = Multimaps.synchronizedMultimap(HashMultimap.create());
 
     private final CMCommand command;
 
@@ -33,7 +34,7 @@ public class CMListener implements Listener {
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
-    public Multimap<Player, ExpectedChat> getChatListeners() {
+    public Multimap<UUID, ExpectedChat> getChatListeners() {
         return CHAT_LISTENERS;
     }
 
@@ -100,7 +101,7 @@ public class CMListener implements Listener {
             expectedChat.setFuture(future);
         }
 
-        CHAT_LISTENERS.put(player, expectedChat);
+        CHAT_LISTENERS.put(player.getUniqueId(), expectedChat);
 
         return expectedChat;
     }
@@ -109,12 +110,12 @@ public class CMListener implements Listener {
     public void onPlayerChat(AsyncPlayerChatEvent e) {
         Player player = e.getPlayer();
 
-        Collection<ExpectedChat> listener = CHAT_LISTENERS.get(player);
+        Collection<ExpectedChat> listener = CHAT_LISTENERS.get(player.getUniqueId());
 
         expectations: for (ExpectedChat expectedChat : listener) {
 
             if (expectedChat.wasCancelled() || expectedChat.wasConsumed() || expectedChat.hasExpired()) {
-                CHAT_LISTENERS.remove(player, expectedChat);
+                CHAT_LISTENERS.remove(player.getUniqueId(), expectedChat);
                 continue;
             }
 
@@ -122,7 +123,7 @@ public class CMListener implements Listener {
 
             switch (actionResult){
                 case SUCCESS_AND_CONSUME:
-                    CHAT_LISTENERS.remove(player, expectedChat);
+                    CHAT_LISTENERS.remove(player.getUniqueId(), expectedChat);
                     expectedChat.setWasConsumed(true);
                     e.setCancelled(true);
                     if (expectedChat.getFuture() != null){
@@ -131,7 +132,7 @@ public class CMListener implements Listener {
                     break expectations;
 
                 case SUCCESS:
-                    CHAT_LISTENERS.remove(player, expectedChat);
+                    CHAT_LISTENERS.remove(player.getUniqueId(), expectedChat);
                     expectedChat.setWasConsumed(true);
                     if (expectedChat.getFuture() != null){
                         expectedChat.getFuture().cancel(false);
@@ -149,7 +150,7 @@ public class CMListener implements Listener {
     public void onPlayerQuit(PlayerQuitEvent e) {
         Player player = e.getPlayer();
 
-        Collection<ExpectedChat> expectedChats = CHAT_LISTENERS.removeAll(player);
+        Collection<ExpectedChat> expectedChats = CHAT_LISTENERS.removeAll(player.getUniqueId());
         for (ExpectedChat expectedChat : expectedChats) {
             expectedChat.setWasCancelled(true);
 
