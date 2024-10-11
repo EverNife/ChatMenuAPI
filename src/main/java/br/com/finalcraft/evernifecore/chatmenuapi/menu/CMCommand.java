@@ -1,6 +1,5 @@
 package br.com.finalcraft.evernifecore.chatmenuapi.menu;
 
-import br.com.finalcraft.evernifecore.chatmenuapi.console.ECChatMenuConsoleFilter;
 import br.com.finalcraft.evernifecore.util.FCInputReader;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -19,8 +18,6 @@ public class CMCommand implements CommandExecutor {
         if (args.length <= 2){
             return true;
         }
-
-        ECChatMenuConsoleFilter.applyFilterIfNotAppliedYet();
 
         String menuID = args[0];
 
