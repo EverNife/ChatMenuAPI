@@ -156,6 +156,10 @@ public class ChatMenu implements IElementContainer {
         ChatMenuAPI.setCurrentMenu(player, this);
     }
 
+    public boolean isOpenFor(@NotNull Player player) {
+        return viewers.contains(player);
+    }
+
     /**
      * Sends this menu again to all of the players currently viewing it
      */
