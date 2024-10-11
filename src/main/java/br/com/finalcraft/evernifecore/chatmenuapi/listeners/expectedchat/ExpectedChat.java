@@ -16,6 +16,7 @@ public class ExpectedChat {
     private Runnable onExpireAction;
     private Runnable onPlayerQuitAction;
 
+    private transient long creationTime = System.currentTimeMillis();
     private transient boolean cancelExpirationActionOnPlayerQuit = true;
     private transient ScheduledFuture<?> future; //Holds the future of the expiration task
 
@@ -39,6 +40,6 @@ public class ExpectedChat {
     }
 
     public boolean hasExpired() {
-        return expiration > 0 && System.currentTimeMillis() > expiration;
+        return expiration > 0 && System.currentTimeMillis() > (creationTime + expiration);
     }
 }
