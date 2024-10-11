@@ -79,13 +79,17 @@ public class PlayerChatInterceptor implements Listener {
 
     public void pause(Player player) {
         PlayerMData messageData = getMessageData(player);
-        if (messageData.isPaused()) return;
+        if (messageData.isPaused() == true){
+            return;
+        }
         messageData.paused = true;
     }
 
     public void resume(Player player) {
         PlayerMData playerMData = getMessageData(player);
-        if (playerMData.isPaused()) return;
+        if (playerMData.isPaused() == false){
+            return;
+        }
 
         playerMData.paused = false;
 
@@ -103,7 +107,7 @@ public class PlayerChatInterceptor implements Listener {
             chat.setChatType();
             try {
                 ProtocolLibrary.getProtocolManager().sendServerPacket(player, chat.getHandle());
-            } catch (InvocationTargetException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -123,7 +127,9 @@ public class PlayerChatInterceptor implements Listener {
     @EventHandler
     public void onChat(AsyncPlayerChatEvent e) {
         PlayerMData messageData = getMessageData(e.getPlayer());
-        if (messageData.isPaused()) e.setCancelled(true);
+        if (messageData.isPaused()){
+            e.setCancelled(true);
+        }
     }
 
     public void disable() {

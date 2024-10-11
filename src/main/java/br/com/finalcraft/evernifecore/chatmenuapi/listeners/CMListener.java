@@ -16,6 +16,7 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.ScheduledFuture;
@@ -108,7 +109,7 @@ public class CMListener implements Listener {
     public void onPlayerChat(AsyncPlayerChatEvent e) {
         Player player = e.getPlayer();
 
-        Collection<ExpectedChat> listener = CHAT_LISTENERS.get(player.getUniqueId());
+        Collection<ExpectedChat> listener = new ArrayList<>(CHAT_LISTENERS.get(player.getUniqueId()));
 
         expectations: for (ExpectedChat expectedChat : listener) {
 
@@ -181,7 +182,6 @@ public class CMListener implements Listener {
             command.onCommand(e.getPlayer(), null, label, args);
         }
     }
-
 
     public static interface IChatAction {
 
