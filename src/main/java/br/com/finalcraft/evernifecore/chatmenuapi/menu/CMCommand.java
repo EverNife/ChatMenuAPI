@@ -15,7 +15,7 @@ public class CMCommand implements CommandExecutor {
             return true;
         }
 
-        if (args.length <= 2){
+        if (args.length < 2){ //Usage: /cm <menuID> <element> [...args]
             return true;
         }
 
