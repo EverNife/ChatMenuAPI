@@ -42,4 +42,8 @@ public class ExpectedChat {
     public boolean hasExpired() {
         return expiration > 0 && System.currentTimeMillis() > (creationTime + expiration);
     }
+
+    public boolean isWaitingForResponse() {
+        return !wasCancelled && !wasConsumed && !hasExpired();
+    }
 }

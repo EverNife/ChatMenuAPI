@@ -18,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class InputElement extends Element {
     @NotNull
@@ -25,7 +26,6 @@ public class InputElement extends Element {
     private final FancyText tooLong;
 
     protected int width;
-    private boolean editing;
     private transient ExpectedChat expectedChat;
 
     private static final FancyText DEFAULT_TOO_LONG = new FancyText("§4Too long")
@@ -135,7 +135,7 @@ public class InputElement extends Element {
         text.expandToWidth(width);
 
         text.getComponents().forEach(it -> {
-            if (editing){
+            if (expectedChat != null && expectedChat.isWaitingForResponse()){
                 it.setColor(ChatColor.GRAY);
             }
             it.setUnderlined(true);
@@ -151,25 +151,39 @@ public class InputElement extends Element {
         for (Element element : container.getElements()) {
             if (element instanceof InputElement && element != this) {
                 //Disable editing on all other elements on the same container
-                ((InputElement) element).editing = false;
+                InputElement otherInput = (InputElement) element;
+                if (otherInput.expectedChat != null) {
+
+                    if (otherInput.expectedChat.isWaitingForResponse()){
+                        otherInput.expectedChat.setWasCancelled(true);
+                        if (otherInput.expectedChat.getFuture() != null && !otherInput.expectedChat.getFuture().isCancelled()){
+                            otherInput.expectedChat.getFuture().cancel(true);
+                        }
+                    }
+
+                    otherInput.expectedChat = null;
+                }
             }
         }
 
-        editing = !editing;
-
-        if (expectedChat != null) {
+        if (expectedChat != null && expectedChat.isWaitingForResponse()) {
             expectedChat.setWasCancelled(true);
             expectedChat = null;
+        }else {
+            expectedChat = ChatMenuAPI.getChatListener().expectPlayerChat(
+                    player,
+                    (message) -> {
+                        setValue(message);
+                        container.refresh();
+
+                        return CMListener.IChatAction.ActionResult.SUCCESS_AND_CONSUME;
+                    },
+                    TimeUnit.SECONDS.toMillis(10),
+                    () -> {
+                        container.refresh();
+                    }
+            );
         }
-
-        expectedChat = ChatMenuAPI.getChatListener().expectPlayerChat(player, (message) -> {
-
-            editing = false;
-            setValue(message);
-            container.refresh();
-
-            return CMListener.IChatAction.ActionResult.SUCCESS_AND_CONSUME;
-        });
 
         return true;
     }
