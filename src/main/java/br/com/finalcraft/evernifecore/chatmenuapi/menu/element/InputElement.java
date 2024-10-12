@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class InputElement extends Element {
+public class InputElement extends Element implements ICanExpectChat {
     @NotNull
     private final State<String> value;
     private final FancyText tooLong;
@@ -145,26 +145,23 @@ public class InputElement extends Element {
         return Collections.singletonList(text);
     }
 
+    @Override
+    public void cancelExpectedChat(){
+        if (expectedChat != null && expectedChat.isWaitingForResponse()){
+            expectedChat.setCancelled(true);
+            if (expectedChat.getFuture().get() != null && !expectedChat.getFuture().get().isCancelled()){
+                expectedChat.getFuture().get().cancel(true);
+            }
+            expectedChat = null;
+        }
+    }
+
     public boolean onClick(@NotNull IElementContainer container, @NotNull Player player) {
         super.onClick(container, player);
 
-        for (Element element : container.getElements()) {
-            if (element instanceof InputElement && element != this) {
-                //Disable editing on all other elements on the same container
-                InputElement otherInput = (InputElement) element;
-                if (otherInput.expectedChat != null) {
-
-                    if (otherInput.expectedChat.isWaitingForResponse()){
-                        otherInput.expectedChat.setCancelled(true);
-                        if (otherInput.expectedChat.getFuture().get() != null && !otherInput.expectedChat.getFuture().get().isCancelled()){
-                            otherInput.expectedChat.getFuture().get().cancel(true);
-                        }
-                    }
-
-                    otherInput.expectedChat = null;
-                }
-            }
-        }
+        //Cancel all other expected chat on this Menu, or if in a GroupElement,
+        // cancel all expected chat only for this GroupElement
+        container.cancelInnerElementsExpectedChat();
 
         if (expectedChat != null && expectedChat.isWaitingForResponse()) {
             expectedChat.setCancelled(true);
@@ -176,7 +173,7 @@ public class InputElement extends Element {
                         setValue(message);
                         container.refresh();
 
-                        return CMListener.IChatAction.ActionResult.SUCCESS_AND_CONSUME;
+                        return CMListener.IChatAction.ActionResult.SUCCESS;
                     },
                     TimeUnit.SECONDS.toMillis(10),
                     () -> {

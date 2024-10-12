@@ -45,4 +45,14 @@ public interface IElementContainer {
      * Displays this container again to all of the players currently viewing it
      */
     void refresh();
+
+    /**
+     * Cancel ALL the expected chat for this container
+     *
+     * For example, if an input element is expecting a chat,
+     * this method will cancel that expectation
+     */
+    void cancelInnerElementsExpectedChat();
+
+    ChatMenu getChatMenu();
 }

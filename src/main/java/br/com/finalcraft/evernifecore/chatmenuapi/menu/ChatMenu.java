@@ -2,6 +2,8 @@ package br.com.finalcraft.evernifecore.chatmenuapi.menu;
 
 import br.com.finalcraft.evernifecore.chatmenuapi.menu.element.ButtonElement;
 import br.com.finalcraft.evernifecore.chatmenuapi.menu.element.Element;
+import br.com.finalcraft.evernifecore.chatmenuapi.menu.element.GroupElement;
+import br.com.finalcraft.evernifecore.chatmenuapi.menu.element.ICanExpectChat;
 import br.com.finalcraft.evernifecore.chatmenuapi.protocol.PlayerChatInterceptor;
 import br.com.finalcraft.evernifecore.chatmenuapi.util.Text;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -98,6 +100,7 @@ public class ChatMenu implements IElementContainer {
      * @param <T> the type of element
      * @return the element added
      */
+    @Override
     public <T extends Element> T add(@NotNull T t) {
         Objects.requireNonNull(t);
         elements.add(t);
@@ -111,6 +114,7 @@ public class ChatMenu implements IElementContainer {
      * @param element the element to remove
      * @return true if the element was removed
      */
+    @Override
     public boolean remove(@NotNull Element element) {
         return elements.remove(element);
     }
@@ -119,6 +123,7 @@ public class ChatMenu implements IElementContainer {
      * @return an unmodifiable list of all the elements in this menu.
      */
     @NotNull
+    @Override
     public List<Element> getElements() {
         return Collections.unmodifiableList(elements);
     }
@@ -145,6 +150,7 @@ public class ChatMenu implements IElementContainer {
      *
      * @param player the player to send the menu to.
      */
+    @Override
     public void openFor(@NotNull Player player) {
         PlayerChatInterceptor chat = ChatMenuAPI.getChatIntercept();
         if (viewers.add(player) && pauseChat) {
@@ -163,10 +169,22 @@ public class ChatMenu implements IElementContainer {
     /**
      * Sends this menu again to all of the players currently viewing it
      */
+    @Override
     public void refresh() {
         viewers.removeIf(it -> !it.isOnline());
         for (Player viewer : viewers)
             openFor(viewer);
+    }
+
+    @Override
+    public void cancelInnerElementsExpectedChat() {
+        for (Element element : getElements()) {
+            if (element instanceof ICanExpectChat) {
+                ((ICanExpectChat) element).cancelExpectedChat();
+            }else if (element instanceof GroupElement){
+                ((GroupElement) element).cancelInnerElementsExpectedChat();
+            }
+        }
     }
 
     @NotNull
@@ -261,6 +279,7 @@ public class ChatMenu implements IElementContainer {
      * @return the command used to interact with the provided element
      */
     @NotNull
+    @Override
     public String getCommand(@NotNull Element element) {
         return getCommand() + elements.indexOf(element) + " ";
     }
@@ -312,10 +331,12 @@ public class ChatMenu implements IElementContainer {
         this.pauseChat = pauseChat;
     }
 
+    @Override
     public int hashCode() {
         return id.hashCode();
     }
 
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof ChatMenu)) return false;
@@ -323,5 +344,10 @@ public class ChatMenu implements IElementContainer {
         ChatMenu chatMenu = (ChatMenu) o;
 
         return id.equals(chatMenu.id);
+    }
+
+    @Override
+    public ChatMenu getChatMenu() {
+        return this;
     }
 }
