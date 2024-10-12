@@ -155,9 +155,9 @@ public class InputElement extends Element {
                 if (otherInput.expectedChat != null) {
 
                     if (otherInput.expectedChat.isWaitingForResponse()){
-                        otherInput.expectedChat.setWasCancelled(true);
-                        if (otherInput.expectedChat.getFuture() != null && !otherInput.expectedChat.getFuture().isCancelled()){
-                            otherInput.expectedChat.getFuture().cancel(true);
+                        otherInput.expectedChat.setCancelled(true);
+                        if (otherInput.expectedChat.getFuture().get() != null && !otherInput.expectedChat.getFuture().get().isCancelled()){
+                            otherInput.expectedChat.getFuture().get().cancel(true);
                         }
                     }
 
@@ -167,7 +167,7 @@ public class InputElement extends Element {
         }
 
         if (expectedChat != null && expectedChat.isWaitingForResponse()) {
-            expectedChat.setWasCancelled(true);
+            expectedChat.setCancelled(true);
             expectedChat = null;
         }else {
             expectedChat = ChatMenuAPI.getChatListener().expectPlayerChat(

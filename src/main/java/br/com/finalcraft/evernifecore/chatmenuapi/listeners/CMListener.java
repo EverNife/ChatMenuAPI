@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class CMListener implements Listener {
 
@@ -87,7 +88,9 @@ public class CMListener implements Listener {
             throw new IllegalArgumentException("Cannot call null function.");
         }
 
-        ExpectedChat expectedChat = new ExpectedChat(player, chatAction, expiration, onExpireAction, onPlayerQuitAction);
+        AtomicReference<ScheduledFuture<?>> possibleFuture = new AtomicReference<>();
+
+        ExpectedChat expectedChat = new ExpectedChat(player, chatAction, expiration, onExpireAction, onPlayerQuitAction, possibleFuture);
 
         if (onExpireAction != null){
             ScheduledFuture<?> future = FCScheduler.getScheduler().schedule(() -> {
@@ -97,7 +100,7 @@ public class CMListener implements Listener {
 
                 expectedChat.getOnExpireAction().run();
             }, expiration, TimeUnit.MILLISECONDS);
-            expectedChat.setFuture(future);
+            possibleFuture.set(future);
         }
 
         CHAT_LISTENERS.put(player.getUniqueId(), expectedChat);
@@ -123,18 +126,18 @@ public class CMListener implements Listener {
             switch (actionResult){
                 case SUCCESS_AND_CONSUME:
                     CHAT_LISTENERS.remove(player.getUniqueId(), expectedChat);
-                    expectedChat.setWasConsumed(true);
+                    expectedChat.setConsumed(true);
                     e.setCancelled(true);
-                    if (expectedChat.getFuture() != null){
-                        expectedChat.getFuture().cancel(false);
+                    if (expectedChat.getFuture().get() != null){
+                        expectedChat.getFuture().get().cancel(false);
                     }
                     break expectations;
 
                 case SUCCESS:
                     CHAT_LISTENERS.remove(player.getUniqueId(), expectedChat);
-                    expectedChat.setWasConsumed(true);
-                    if (expectedChat.getFuture() != null){
-                        expectedChat.getFuture().cancel(false);
+                    expectedChat.setConsumed(true);
+                    if (expectedChat.getFuture().get() != null){
+                        expectedChat.getFuture().get().cancel(false);
                     }
                     continue expectations;
 
@@ -151,10 +154,10 @@ public class CMListener implements Listener {
 
         Collection<ExpectedChat> expectedChats = CHAT_LISTENERS.removeAll(player.getUniqueId());
         for (ExpectedChat expectedChat : expectedChats) {
-            expectedChat.setWasCancelled(true);
+            expectedChat.setCancelled(true);
 
-            if (expectedChat.isCancelExpirationActionOnPlayerQuit() && expectedChat.getFuture() != null){
-                expectedChat.getFuture().cancel(false);
+            if (expectedChat.isCancelExpirationActionOnPlayerQuit() && expectedChat.getFuture().get() != null){
+                expectedChat.getFuture().get().cancel(false);
             }
 
             if (expectedChat.getOnPlayerQuitAction() != null){
