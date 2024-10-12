@@ -55,9 +55,18 @@ public class ExpectedChat {
         return this;
     }
 
-    public ExpectedChat setCancelled(boolean cancelled) {
-        this.wasCancelled = cancelled;
-        return this;
+    public boolean cancel() {
+        if (wasCancelled){
+            return false;
+        }
+
+        this.wasCancelled = true;
+
+        if (isCancelExpirationActionOnPlayerQuit() && getFuture().get() != null){
+            getFuture().get().cancel(false);
+        }
+
+        return true;
     }
 
     public boolean hasExpired() {

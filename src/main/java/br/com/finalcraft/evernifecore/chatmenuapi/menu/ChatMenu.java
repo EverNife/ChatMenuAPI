@@ -1,5 +1,6 @@
 package br.com.finalcraft.evernifecore.chatmenuapi.menu;
 
+import br.com.finalcraft.evernifecore.chatmenuapi.listeners.expectedchat.ExpectedChat;
 import br.com.finalcraft.evernifecore.chatmenuapi.menu.element.ButtonElement;
 import br.com.finalcraft.evernifecore.chatmenuapi.menu.element.Element;
 import br.com.finalcraft.evernifecore.chatmenuapi.menu.element.GroupElement;
@@ -249,12 +250,35 @@ public class ChatMenu implements IElementContainer {
      * @param player the player that closed the menu
      */
     public void close(@NotNull Player player) {
+
+        boolean anyChange = false;
+
         if (viewers.remove(player)) {
+
+            if (ChatMenuAPI.getChatListener().hasAnyExpectedChat(player)) {
+                //Only check if there is any expected chat
+                //as the following code requires a small overhead
+                for (Element element : this.getElementsRecursively()) {
+                    if (element instanceof ICanExpectChat) {
+                        ExpectedChat expectedChat = ((ICanExpectChat) element).getExpectedChat();
+                        if (expectedChat != null && expectedChat.getPlayer().equals(player)) {
+                            if (expectedChat.cancel()){
+                                anyChange = true; //If any expected chat was canceled, we need to refresh the menu
+                            }
+                        }
+                    }
+                }
+            }
+
             ChatMenuAPI.setCurrentMenu(player, null);
             ChatMenuAPI.getChatIntercept().resume(player);
         }
-        if (viewers.size() == 0 && autoUnregister) {
-            unregister();
+        if (viewers.size() == 0) {
+            if (autoUnregister){
+                unregister();
+            }else if (anyChange){
+                this.refresh();
+            }
         }
     }
 

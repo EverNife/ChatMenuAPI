@@ -108,6 +108,10 @@ public class CMListener implements Listener {
         return expectedChat;
     }
 
+    public boolean hasAnyExpectedChat(Player player){
+        return CHAT_LISTENERS.get(player.getUniqueId()).size() > 0;
+    }
+
     @EventHandler
     public void onPlayerChat(AsyncPlayerChatEvent e) {
         Player player = e.getPlayer();
@@ -154,11 +158,7 @@ public class CMListener implements Listener {
 
         Collection<ExpectedChat> expectedChats = CHAT_LISTENERS.removeAll(player.getUniqueId());
         for (ExpectedChat expectedChat : expectedChats) {
-            expectedChat.setCancelled(true);
-
-            if (expectedChat.isCancelExpirationActionOnPlayerQuit() && expectedChat.getFuture().get() != null){
-                expectedChat.getFuture().get().cancel(false);
-            }
+            expectedChat.cancel();
 
             if (expectedChat.getOnPlayerQuitAction() != null){
                 expectedChat.getOnPlayerQuitAction().run();

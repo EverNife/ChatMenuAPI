@@ -146,12 +146,14 @@ public class InputElement extends Element implements ICanExpectChat {
     }
 
     @Override
+    public ExpectedChat getExpectedChat() {
+        return expectedChat;
+    }
+
+    @Override
     public void cancelExpectedChat(){
         if (expectedChat != null && expectedChat.isWaitingForResponse()){
-            expectedChat.setCancelled(true);
-            if (expectedChat.getFuture().get() != null && !expectedChat.getFuture().get().isCancelled()){
-                expectedChat.getFuture().get().cancel(true);
-            }
+            expectedChat.cancel();
             expectedChat = null;
         }
     }
@@ -164,7 +166,7 @@ public class InputElement extends Element implements ICanExpectChat {
         container.cancelInnerElementsExpectedChat();
 
         if (expectedChat != null && expectedChat.isWaitingForResponse()) {
-            expectedChat.setCancelled(true);
+            expectedChat.cancel();
             expectedChat = null;
         }else {
             expectedChat = ChatMenuAPI.getChatListener().expectPlayerChat(
